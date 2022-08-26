@@ -1,43 +1,36 @@
-const http = require("http");
+const express = require('express')
 const port = 8081;
-const toDoList = ["task-1", "task-2", "task-3", "task-4"];
 
-http
-.createServer((req, res) => {
-  const { method, url } = req;
-  
-  if (url === "/todos") {
-    if (method == "GET") {
-      res.writeHead(200, { "Content-type": "text/html" });
-      res.write("<h1>Hello world </h1>");
-      res.write(toDoList.toString());
-      res.end();
-    } else if (method == "POST") {
-      let body = '';
-      req.on("error", (err) => {
-        console.log(err)
-      })
-      .on('data', (chunks) => {
-        body += chunks
-      })
-      .on ('end', () =>{
-        body = JSON.parse(body)
-        let newToDo=toDoList;
-        newToDo.push(body.item_1)
-        console.log(newToDo);
-        res.writeHead(201)
-        })
-      } else if (method == "DELETE") {
-      }
-    } else {
-      res.writeHead(404);
-      res.write(
-        "<h1 style='font-size:50px;text-align:centre;font-weight:600'> Dei Mayiru check your URL Properly </h2>"
-      );
+// Initialization
+const app = express()
+// Application uses the json format for the data transfer
+app.use(express.json());
+// Our DATA
+let toDoList = ['Computer Programming', 'Youtube work']
+
+app.get('/todos',(req,res) => {
+  res.status(200).send(toDoList)
+})
+app.post('/todos', (req,res)=>{
+  let toDoItem = req.body.item;
+  toDoList.push(toDoItem)
+  res.send({
+    toDoList
+  })
+})
+app.delete('/todos', (req,res)=>{
+  const itemToDelete = req.body.item
+  toDoList.find((element,index) =>{
+    if (element == req.body.item){
+      toDoList.slice(index,1)
     }
   })
-  .listen(port, () => {
-    console.log("hello world");
-  });
+  res.status(200).send({
+    message: `Item deleted ${req.body.item}`,
+    body: toDoList
+  })
+})
 
-// http://localhost:8081
+app.listen(port,() =>{
+  console.log(`server running on ${port}`)
+})
